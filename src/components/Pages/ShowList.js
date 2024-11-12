@@ -6,6 +6,22 @@ function ShowList(){
   const [mockData, setMockData] =useState([]);
   const [mode, setMode] =useState('add');
 
+  const [modalInput, setModalInput] = useState({
+    name: "",
+    age: "",
+    job: "",
+    phoneNumber: ""
+  })
+
+  const [selectId, setSelectID] = useState("");
+
+  const handleModalInput = (e) =>{
+    setModalInput({
+      ...modalInput,
+      [e.target.name] :e.target.value
+    })
+  }
+
   window.onload = function () {
     let btnStu = document.getElementById("btnStu");
     let btnAdd = document.getElementById("btnAdd");
@@ -28,8 +44,7 @@ function ShowList(){
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.response); 
         console.log('데이터 확인', res);
-        setMockData(res);
-        // contents.innerHTML = makeList(res);   
+        setMockData(res);  
       } else {
         console.log(xhr.status, xhr.statusText); 
       }
@@ -38,22 +53,16 @@ function ShowList(){
 
   // 데이터를 서버에 추가하는 함수
   function postData() {
-    let contents = document.getElementById("contents");
-    let name = document.getElementById("name");
-    let age = document.getElementById("age");
-    let job = document.getElementById("job");
-    let phoneNumber = document.getElementById("phoneNumber");
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST","https://672818e6270bd0b975545367.mockapi.io/api/v1/user");
     xhr.setRequestHeader("content-type","application/json;charset=UTF-8")
-    const data = { name: name.value, age: age.value, job: job.value, phoneNumber:phoneNumber.value };
+
+    const data = modalInput;
 
     xhr.send(JSON.stringify(data));
     xhr.onload = () => {
       if (xhr.status === 201) {
-        name.value = "";
-        age.value = "";
         const res = JSON.parse(xhr.response);
         getStudents() ;
       } else {
@@ -65,44 +74,27 @@ function ShowList(){
   function editChange(item) {
     console.log("수정 데이터 확인", item);
     
+    setMode('edit');
     const {id, name, age, job, phoneNumber} = item;
+    setSelectID(id);
 
-    let tagName = document.getElementById("name");
-    let tagAge = document.getElementById("age");
-    let tagJob = document.getElementById("job");
-    let tagPhoneNumber = document.getElementById("phoneNumber");
-
-    tagName.value = name;
-    tagAge.value = age;
-    tagJob.value = job;
-    tagPhoneNumber.value = phoneNumber;
-
-    let btnAdd = document.getElementById("btnAdd");
-    
-    btnAdd.removeEventListener("click", postData);
-    // 새로운 이벤트 핸들러 등록
-    const handler = function() {
-      updateData(id);
-      
-      // updateData 호출 후 핸들러 재설정
-      btnAdd.removeEventListener("click", handler); // 현재 이벤트 핸들러 제거
-      btnAdd.addEventListener("click", postData);   // 다시 postData로 원복
-    };
-
-    // 업데이트용 이벤트 핸들러 추가
-    btnAdd.addEventListener("click", handler);
+    setModalInput({
+      ...modalInput,
+      name: name,
+      age:age,
+      job: job,
+      phoneNumber: phoneNumber
+    })
   }
 
   function resetInput(){
-    let name = document.getElementById("name");
-    let age = document.getElementById("age");
-    let job = document.getElementById("job");
-    let phoneNumber = document.getElementById("phoneNumber");
 
-    name.value = "";
-    age.value = "";
-    job.value = "";
-    phoneNumber.value = "";
+    setModalInput({
+      name: "",
+      age: "",
+      job: "",
+      phoneNumber: ""
+    })
   }
 
   //데이터 수정하는 함수
@@ -147,7 +139,6 @@ function ShowList(){
     xhr.onload = () => {
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.response); 
-        // contents.innerHTML = makeList(res); 
         console.log(xhr.status, res);  
         getStudents(); 
       } else {
@@ -164,7 +155,7 @@ function ShowList(){
     <div>
     <h2>Membership Management</h2>
   <button id="btnStu" className="btn btn-warning" onClick={getStudents}>회원 정보 가져오기</button>
-  <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+  <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" onClick={() => setMode('add')}>
   회원 추가
   </button>
 
@@ -199,20 +190,20 @@ function ShowList(){
             <div className="modal-body">
               <div style={{marginTop: "10px"}}>
                 <label htmlFor="name">이름:</label>
-                <input type="text" id="name" name="name"/>
+                <input type="text" id="name" name="name" onChange={handleModalInput} value={modalInput.name}/>
               <label htmlFor="age">나이:</label>
-              <input  type="number" id="age" name="age"/>
+              <input  type="number" id="age" name="age" onChange={handleModalInput} value={modalInput.age}/>
           
               <label htmlFor="job">직업:</label>
-              <input  type="text" id="job" name="job"/>
+              <input  type="text" id="job" name="job" onChange={handleModalInput} value={modalInput.job}/>
               
               <label htmlFor="phoneNumber">번호:</label>
-              <input  type="text" id="phoneNumber" name="phoneNumber"/>
+              <input  type="text" id="phoneNumber" name="phoneNumber" onChange={handleModalInput} value={modalInput.phoneNumber}/>
             </div>
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={resetInput}>취소</button>
-            <button type="button" id="btnAdd" className="btn btn-primary" data-bs-dismiss="modal" onClick={postData}>확인</button>
+            <button type="button" id="btnAdd" className="btn btn-primary" data-bs-dismiss="modal" onClick= {()=>(mode==='add'? postData() : updateData(selectId))}>확인</button>
           </div>
         </div>
       </div>
