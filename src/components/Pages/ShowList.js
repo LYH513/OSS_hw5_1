@@ -33,7 +33,7 @@ function ShowList(){
   // 학생 정보를 서버에서 가져오는 함수
   function getStudents() {
     console.log("눌림");
-    let contents = document.getElementById("contents");
+    // let contents = document.getElementById("contents");
     const xhr = new XMLHttpRequest();
 
     xhr.open("GET", "https://672818e6270bd0b975545367.mockapi.io/api/v1/user");
@@ -102,7 +102,7 @@ function ShowList(){
     // alert(id)
     const xhr = new XMLHttpRequest();
 
-    let contents = document.getElementById("contents");
+    // let contents = document.getElementById("contents");
     let name = document.getElementById("name");
     let age = document.getElementById("age");
     let job = document.getElementById("job");
