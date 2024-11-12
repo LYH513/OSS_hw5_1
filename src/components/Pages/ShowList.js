@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
+import '../../index.css';
 
 function ShowList(){
+
+  const [mockData, setMockData] =useState([]);
+  const [mode, setMode] =useState('add');
 
   window.onload = function () {
     let btnStu = document.getElementById("btnStu");
@@ -12,6 +16,7 @@ function ShowList(){
 
   // 학생 정보를 서버에서 가져오는 함수
   function getStudents() {
+    console.log("눌림");
     let contents = document.getElementById("contents");
     const xhr = new XMLHttpRequest();
 
@@ -22,30 +27,14 @@ function ShowList(){
     xhr.onload = () => {
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.response); 
-        contents.innerHTML = makeList(res);   
+        console.log('데이터 확인', res);
+        setMockData(res);
+        // contents.innerHTML = makeList(res);   
       } else {
         console.log(xhr.status, xhr.statusText); 
       }
     }
   }
-
-  function makeList(data) {
-    let html = "<ul>";
-    console.log(data);
-    data.forEach(item => {
-      html += `<li className="member"> 
-        이름: ${item.name}/ 나이: ${item.age}/ 직업: ${item.job}/ 번호: ${item.phoneNumber}
-        <span>
-          <button data-bs-toggle="modal" data-bs-target="#staticBackdrop" className="btn1" onClick={()=>editChange('${item.id}', '${item.name}', '${item.age}', '${item.job}', '${item.phoneNumber}')}>
-            수정</button>
-          <button onClick={()=>deleteData('${item.id}')}className="btn2">삭제</button>
-        </span>
-      </li>`;
-    });
-    html += "</ul>";
-    return html;
-  }
-
 
   // 데이터를 서버에 추가하는 함수
   function postData() {
@@ -73,16 +62,20 @@ function ShowList(){
     }
     }
 
-  function editChange(id, nameValue, ageValue, jobValue, phoneNumberValue) {
-    let name = document.getElementById("name");
-    let age = document.getElementById("age");
-    let job = document.getElementById("job");
-    let phoneNumber = document.getElementById("phoneNumber");
+  function editChange(item) {
+    console.log("수정 데이터 확인", item);
+    
+    const {id, name, age, job, phoneNumber} = item;
 
-    name.value = nameValue;
-    age.value = ageValue;
-    job.value = jobValue;
-    phoneNumber.value = phoneNumberValue;
+    let tagName = document.getElementById("name");
+    let tagAge = document.getElementById("age");
+    let tagJob = document.getElementById("job");
+    let tagPhoneNumber = document.getElementById("phoneNumber");
+
+    tagName.value = name;
+    tagAge.value = age;
+    tagJob.value = job;
+    tagPhoneNumber.value = phoneNumber;
 
     let btnAdd = document.getElementById("btnAdd");
     
@@ -170,12 +163,31 @@ function ShowList(){
   return(
     <div>
     <h2>Membership Management</h2>
-  <button id="btnStu" className="btn btn-warning" >회원 정보 가져오기</button>
+  <button id="btnStu" className="btn btn-warning" onClick={getStudents}>회원 정보 가져오기</button>
   <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
   회원 추가
   </button>
 
-  <div id="contents"></div>  
+  <div id="contents">
+    <ul>
+    {
+      mockData.map((item)=>{
+        return(
+          <div key={item.id}>
+            <li className='member'>
+            이름: {item.name}/ 나이: {item.age}/ 직업: {item.job}/ 번호: {item.phoneNumber}
+            <span>
+              <button data-bs-toggle="modal" data-bs-target="#staticBackdrop" className="btn1" onClick={()=>editChange(item)}>
+                수정</button>
+              <button onClick={()=>deleteData(item.id)}className="btn2">삭제</button>
+            </span>
+            </li>
+          </div>
+        );
+      })
+    }
+    </ul>
+  </div>  
 
     <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div className="modal-dialog">
@@ -200,7 +212,7 @@ function ShowList(){
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={resetInput}>취소</button>
-            <button type="button" id="btnAdd" className="btn btn-primary" data-bs-dismiss="modal">확인</button>
+            <button type="button" id="btnAdd" className="btn btn-primary" data-bs-dismiss="modal" onClick={postData}>확인</button>
           </div>
         </div>
       </div>
